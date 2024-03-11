@@ -1,3 +1,4 @@
+"use client";
 import { Outlet ,  Navigate } from "react-router-dom"
 
 const AuthLayout = () => {
@@ -12,8 +13,9 @@ const AuthLayout = () => {
         <Outlet/>
       </section>
 
-      <img src="/public/assets/images/side-img.png" 
-      alt="logo"  className="hidden xl:block h-screen w-1/2 object-cover bg-no-repeat"/>
+      <img src="/public/assets/images/side-img.png"
+      // i can add hidden class in the below line 
+      alt="logo"  className=" xl:block h-screen w-1/2 object-cover bg-no-repeat"/>
       </>
 
     )}
