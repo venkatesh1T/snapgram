@@ -110,7 +110,7 @@ const SignupForm = () => {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input type="text" className="shad-input" autoComplete="current-password" {...field} />
+                  <Input type="text" className="shad-input" autoComplete="current-password" {...field}   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
