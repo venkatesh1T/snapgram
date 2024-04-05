@@ -67,11 +67,12 @@ const PostForm = ({ post, action }: PostFormProps) => {
     }
 
     // ACTION = CREATE
+
     const newPost = await createPost({
       ...value,
       userId: user.id,
     });
-
+    console.log(newPost)
     if (!newPost) {
       toast({
         title: `${action} post failed. Please try again.`,

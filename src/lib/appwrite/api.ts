@@ -179,14 +179,14 @@ export async function createPost(post: INewPost) {
 
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
-
+    // console.log(post.userID)
     // Create post
     const newPost = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       ID.unique(),
       {
-        creator: post.creatorId, // Use the user's unique identifier here
+        creator: post.userId, // Use the user's unique identifier here
         caption: post.caption,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
