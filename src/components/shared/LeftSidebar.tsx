@@ -2,7 +2,7 @@ import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useSignOutAccount } from "@/lib/react-query/queriesAndMutations";
 import { useEffect } from "react";
-import { useUserContext } from "@/context/AuthContext";
+import { useUserContext  , INITIAL_USER} from "@/context/AuthContext";
 import { sidebarLinks } from "@/constants";
 import { INavLink } from "@/types";
 
@@ -11,7 +11,17 @@ const LeftSidebar = () => {
   const { mutate: signOut, isSuccess } = useSignOutAccount();
 
   const navigate = useNavigate();
-  const { user } = useUserContext();
+  const { user  , setIsAuthenticated , setUser} = useUserContext();
+
+  const handleSignOut = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+    signOut();
+    setIsAuthenticated(false);
+    setUser(INITIAL_USER);
+    navigate("/sign-in");
+  };
 
   useEffect(() => {
     if (isSuccess) {
