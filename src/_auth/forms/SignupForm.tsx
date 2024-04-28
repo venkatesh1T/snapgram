@@ -2,40 +2,26 @@
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from 'react-router-dom'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast"
-
+} 
+from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { SignupValidation } from "@/lib/validation";
-import Loader from "@/components/shared/Loader";
-import { Link  , useNavigate } from "react-router-dom";
-
-import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations";
-import { useUserContext } from "@/context/AuthContext";
+import { Loader } from "lucide-react";
+import { createUserAccount } from "@/lib/appwrite/api";
 
 const SignupForm = () => {
-  const { toast } = useToast();
 
-  const {checkAuthUser , isLoading: isUserLoading} = useUserContext();
-  const navigate = useNavigate();
-
-  
-  
-  
-
-  const {mutateAsync: createUserAccount , isPending: isCreatingAccount} = useCreateUserAccount();
-  const {mutateAsync: signInAccount , isPending: isSigningIn} = useSignInAccount();
-
-  
-  
+  const isLoading =false;
 
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -47,44 +33,12 @@ const SignupForm = () => {
     },
   });
 
-  
-  
-
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof SignupValidation>) {
-    try {
-      const newUser = await createUserAccount(values);
-
-      if (!newUser) {
-        throw new Error("Sign up failed. Please try again.");
-      }
-
-      const session = await signInAccount({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (!session) {
-        throw new Error("Sign in failed. Please try again.");
-      }
-
-      const isLoggedIn = await checkAuthUser();
-
-      if (isLoggedIn) {
-        form.reset();
-        navigate('/');
-      } else {
-        throw new Error("Sign up failed. Please try again.");
-      }
-    } catch (error) {
-      toast({
-        title: error.message || "An error occurred.",
-        status: "error",
-      });
-    }
-
+    const newUser = await createUserAccount(values);
+    
+    console.log (newUser)
   }
-  
 
   return (
     <Form {...form}>
@@ -103,32 +57,61 @@ const SignupForm = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col gap-3 w-full mt-2"
         >
+ <FormField
+      control={form.control}
+      name="name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Name</FormLabel>
+          <FormControl>
+            <Input
+              type="text"
+              className="shad-input"
+              {...field}
+              pattern="[A-Za-z ]+"
+              title="Please enter only alphabets and spaces"
+              onChange={(e) => {
+                let inputValue = e.target.value;
+                inputValue = inputValue.toLowerCase(); // Convert to lowercase
+                const regex = /^[(A-Z)+a-z ]+$/;
+                // const regex = /^[a-z0-9@_]+$/;
+                if (inputValue === '' || regex.test(inputValue)) {
+                  field.onChange({ ...e, target: { ...e.target, value: inputValue } });
+                }
+              }}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
           <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input type="text" className="shad-input" autoComplete="current-password" {...field}   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input type="text" className="shad-input" autoComplete="current-password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      control={form.control}
+      name="username"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Username</FormLabel>
+          <FormControl>
+            <Input
+              type="text"
+              className="shad-input"
+              {...field}
+              pattern="[A-Za-z0-9@_]+"
+              title="Please enter only uppercase and lowercase alphabets, numbers, '@', and '_'."
+              onChange={(e) => {
+                let inputValue = e.target.value;
+                inputValue = inputValue.toLowerCase(); // Convert to lowercase
+                const regex = /^[a-z0-9@_]+$/;
+                if (inputValue === '' || regex.test(inputValue)) {
+                  field.onChange({ ...e, target: { ...e.target, value: inputValue } });
+                }
+              }}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
           <FormField
             control={form.control}
             name="email"
@@ -136,7 +119,7 @@ const SignupForm = () => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" className="shad-input" autoComplete="current-password" {...field} />
+                  <Input type="email" className="shad-input" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -149,24 +132,25 @@ const SignupForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" className="shad-input" autoComplete="current-password" {...field} />
+                  <Input type="password" className="shad-input" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <Button type="submit" className="shad-button_primary">
-            {isCreatingAccount ? (
+            {isLoading ? (
               <div className="flex-center gap-2">
-                <Loader/>Loading...
+                <Loader/>  Loading...
               </div>
             ): "Sign up"}
             
           </Button>
-          <p className="text-small-register text-light-2 text-center mt-2">
-            Already have an account ?
-            <Link to='/sign-in' className="text-primary-500 text-small-semibold ml-1"> Log in</Link>
+          <p className="text-small-regular text-light-2 text-center mt-2">
+            Already have an account?
+            <Link to="/sign-in" className="text-primary-500 text-small-semibold ml-1">Log in</Link>
           </p>
+
         </form>
       </div>
     </Form>
